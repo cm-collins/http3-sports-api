@@ -65,7 +65,9 @@ http3-sports-api/
 ├── docs/
 │   ├── PRD-LiveSportsApp.md     # Product Requirements (planning)
 │   ├── TRD-LiveSportsApp.md     # Technical Requirements (planning)
-│   └── GO-LIVE.md               # Deployment and release plan (planning)
+│   ├── GO-LIVE.md               # Deployment and release plan (planning)
+│   ├── TLS-UDP-QUIC-HTTP3.md     # Protocol reference notes
+│   └── plans/                   # Phase-by-phase implementation plan
 ├── results/
 │   └── benchmarks.md            # Benchmark results capture (planning)
 └── README.md
@@ -132,6 +134,7 @@ curl -v --http3 https://localhost:5001/health
 - `docs/PRD-LiveSportsApp.md` (what we’re building and why)
 - `docs/TRD-LiveSportsApp.md` (how we’re building it)
 - `docs/GO-LIVE.md` (what “live” means and the rollout checklist)
+- `docs/plans/README.md` (phase-by-phase delivery plan)
 - `docs/TLS-UDP-QUIC-HTTP3.md` (protocol reference notes)
 
 ---

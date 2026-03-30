@@ -117,9 +117,10 @@ Product:
 
 ## 11. Milestones (Docs-Only Plan)
 
-- Phase 0: Backend skeleton + docs aligned with reality (this repo state).
-- Phase 1: Implement live matches + fixtures + caching.
+- Phase 0: .NET 10 foundation + HTTP/3 dev setup + live matches via API-Football when configured.
+- Phase 1: Upcoming fixtures + stable API contracts + caching and resilience.
 - Phase 2: SSE streams + highlights + stats.
 - Phase 3: Benchmark endpoints + results capture workflow.
 - Phase 4: Android app + end-to-end demo.
 
+Detailed execution plans live in `docs/plans/README.md`.

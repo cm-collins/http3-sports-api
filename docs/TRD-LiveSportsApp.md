@@ -6,6 +6,8 @@
 
 ---
 
+Phased execution plans live in `docs/plans/README.md`.
+
 ## Table of Contents
 1. [System Overview](#1-system-overview)
 2. [Architecture](#2-architecture)
@@ -725,7 +727,9 @@ http3-sports-api/
 ├── docs/
 │   ├── PRD-LiveSportsApp.md
 │   ├── TRD-LiveSportsApp.md
-│   └── GO-LIVE.md
+│   ├── GO-LIVE.md
+│   ├── TLS-UDP-QUIC-HTTP3.md
+│   └── plans/
 └── results/
     └── benchmarks.md
 ```
