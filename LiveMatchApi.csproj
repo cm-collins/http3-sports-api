@@ -7,5 +7,6 @@
 
   <ItemGroup>
     <Compile Remove="tools/**/*.cs" />
+    <Compile Remove="LiveMatchApi.Tests/**/*.cs" />
   </ItemGroup>
 </Project>

@@ -20,10 +20,15 @@ Implemented:
   - `/api/match/{fixtureId}/score-stream` and `/api/match/{fixtureId}/commentary-stream` (optional split streams)
   - `/api/match/{fixtureId}/stats` (API-Football stats; degrades gracefully on upstream errors)
   - `/api/highlights/feed` and `/api/highlights/{team}` (ScoreBat highlights; degrades gracefully)
+- Phase 3 endpoints:
+  - `/api/benchmark/ping`
+  - `/api/benchmark/payload/{kb}`
+  - `/api/benchmark/panel/{name}?delayMs=...`
+  - `/api/benchmark/stream?intervalMs=...` (SSE)
 
 Planned (documented, not implemented yet):
 - External API integrations (TheSportsDB team meta)
-- Benchmark endpoints + dashboard
+- Android benchmark dashboard (client)
 - Android client app
 
 ---
@@ -130,6 +135,82 @@ dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://l
 ```
 
 ---
+
+## Curl Commands (Smoke Tests)
+
+Set base URLs:
+
+```bash
+BASE_HTTP=http://localhost:5000
+BASE_HTTPS=https://localhost:5001
+```
+
+Basic service checks:
+
+```bash
+curl -sS $BASE_HTTP/health
+curl -sS $BASE_HTTP/
+```
+
+Matches (requires `ApiFootball__ApiKey` configured; otherwise returns 503):
+
+```bash
+curl -sS $BASE_HTTP/api/matches/live
+curl -sS $BASE_HTTP/api/matches/upcoming
+
+# Replace {fixtureId} with a real fixture id from /api/matches/live or /api/matches/upcoming
+curl -sS $BASE_HTTP/api/matches/{fixtureId}
+```
+
+Match stats:
+
+```bash
+curl -sS $BASE_HTTP/api/match/{fixtureId}/stats
+```
+
+Match SSE streams (use `-N` to keep the connection open):
+
+```bash
+curl -N $BASE_HTTP/api/match/{fixtureId}/stream
+curl -N $BASE_HTTP/api/match/{fixtureId}/score-stream
+curl -N $BASE_HTTP/api/match/{fixtureId}/commentary-stream
+```
+
+Highlights (ScoreBat; returns a degraded response if upstream is unavailable):
+
+```bash
+curl -sS $BASE_HTTP/api/highlights/feed
+curl -sS $BASE_HTTP/api/highlights/arsenal
+```
+
+Benchmarks (no upstream dependencies):
+
+```bash
+curl -sS $BASE_HTTP/api/benchmark/ping
+curl -sS -D - $BASE_HTTP/api/benchmark/payload/100 -o /dev/null | grep -E "HTTP/|Content-Length|X-Cache|X-Payload-Kb|X-Protocol|X-Quic-Supported|X-Http3-Enabled|Server-Timing"
+curl -sS $BASE_HTTP/api/benchmark/panel/slow?delayMs=1500
+curl -N $BASE_HTTP/api/benchmark/stream?intervalMs=250
+```
+
+Force protocol (when HTTPS is enabled on `:5001`):
+
+```bash
+# HTTP/2
+curl -sS -k --http2 $BASE_HTTPS/api/benchmark/ping
+
+# HTTP/3 (requires curl built with HTTP/3 support, and QUIC enabled in the runtime env)
+curl -sS -k --http3 $BASE_HTTPS/api/benchmark/ping
+```
+
+## Automated Tests
+
+This repo includes real automated tests (integration + service parsing/unit tests).
+
+Run:
+
+```bash
+dotnet test http3-sports-api.sln
+```
 
 ## API Endpoints
 

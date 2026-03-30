@@ -171,3 +171,5 @@ static X509Certificate2? TryFindLocalhostDevelopmentCertificate()
         .OrderByDescending(certificate => certificate.NotAfter)
         .FirstOrDefault();
 }
+
+public partial class Program { }
