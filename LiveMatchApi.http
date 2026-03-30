@@ -10,6 +10,10 @@ Accept: application/json
 
 ###
 
-GET {{LiveMatchApi_Host}}/api/live-matches
+GET {{LiveMatchApi_Host}}/api/matches/live
 Accept: application/json
 
+###
+
+GET {{LiveMatchApi_Host}}/api/matches/upcoming
+Accept: application/json

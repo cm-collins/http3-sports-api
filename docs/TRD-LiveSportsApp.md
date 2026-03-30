@@ -115,8 +115,10 @@ Implemented endpoints today:
 
 - `GET /` (service info)
 - `GET /health`
-- `GET /api/live-matches`
-- `GET /api/live-matches/{id}`
+- `GET /api/matches/live`
+- `GET /api/matches/upcoming`
+- `GET /api/matches/{fixtureId}`
+- `GET /api/live-matches` (alias)
 
 ---
 
@@ -317,8 +319,10 @@ flowchart TD
 
 | Method | Path | Protocol | Description |
 |---|---|---|---|
-| GET | `/api/live-matches` | HTTP/2 or HTTP/3 | List live matches (API-Football; returns 503 if not configured) |
-| GET | `/api/live-matches/{id}` | HTTP/2 or HTTP/3 | Get one match (API-Football; returns 503 if not configured) |
+| GET | `/api/matches/live` | HTTP/2 or HTTP/3 | List live matches (API-Football; returns 503 if not configured) |
+| GET | `/api/matches/upcoming` | HTTP/2 or HTTP/3 | Upcoming fixtures (next 24h, API-Football; returns 503 if not configured) |
+| GET | `/api/matches/{fixtureId}` | HTTP/2 or HTTP/3 | Get a match by fixture id (API-Football; returns 503 if not configured) |
+| GET | `/api/live-matches` | HTTP/2 or HTTP/3 | Alias of `/api/matches/live` |
 
 #### 5.2.2 Target (Planned) Endpoints
 
@@ -573,6 +577,8 @@ erDiagram
 
 ## 9. API Contract
 
+`meta.protocol` reflects the negotiated protocol for that specific request (for example `HTTP/2` vs `HTTP/3`). Clients can treat `HTTP/2` responses as fallback when they attempted `HTTP/3` first.
+
 ### 9.1 Response — Live Match List
 
 ```
@@ -583,21 +589,58 @@ Response: 200 OK
 {
   "matches": [
     {
-      "id": "string",
-      "homeTeam": { "id": "string", "name": "string", "logoUrl": "string" },
-      "awayTeam": { "id": "string", "name": "string", "logoUrl": "string" },
+      "matchId": 123456,
+      "leagueId": 0,
+      "league": "string",
+      "homeTeam": { "id": 0, "name": "string", "logoUrl": "string" },
+      "awayTeam": { "id": 0, "name": "string", "logoUrl": "string" },
       "homeScore": 0,
       "awayScore": 0,
       "minute": 0,
-      "status": "LIVE | UPCOMING | FT",
-      "competition": "string",
-      "kickoff": "ISO8601"
+      "status": "string",
+      "venue": "string",
+      "kickoffUtc": "ISO8601"
     }
   ],
   "meta": {
     "protocol": "HTTP/3",
-    "cachedAt": "ISO8601",
-    "source": "api-football"
+    "utcTime": "ISO8601",
+    "source": "api-football",
+    "quicSupported": true,
+    "http3Enabled": true
+  }
+}
+```
+
+### 9.1.1 Response — Upcoming Fixtures (Next 24h)
+
+```
+GET /api/matches/upcoming
+Protocol: HTTP/3
+Response: 200 OK
+
+{
+  "matches": [
+    {
+      "matchId": 123456,
+      "leagueId": 0,
+      "league": "string",
+      "homeTeam": { "id": 0, "name": "string", "logoUrl": "string" },
+      "awayTeam": { "id": 0, "name": "string", "logoUrl": "string" },
+      "homeScore": 0,
+      "awayScore": 0,
+      "minute": null,
+      "status": "string",
+      "venue": "string",
+      "kickoffUtc": "ISO8601"
+    }
+  ],
+  "meta": {
+    "protocol": "HTTP/3",
+    "utcTime": "ISO8601",
+    "source": "api-football",
+    "quicSupported": true,
+    "http3Enabled": true
   }
 }
 ```

@@ -39,13 +39,15 @@ Endpoints:
 
 - `GET /` service info
 - `GET /health`
-- `GET /api/live-matches`
-- `GET /api/live-matches/{id}`
+- `GET /api/matches/live`
+- `GET /api/matches/upcoming`
+- `GET /api/matches/{fixtureId}`
+- `GET /api/live-matches` (alias)
 
 Behavior:
 
-- If `ApiFootball__ApiKey` is not configured, `/api/live-matches*` returns HTTP 503 with `ProblemDetails`.
-- Current match ids are GUIDs derived deterministically from upstream fixture ids; Phase 1 will standardize the public contract id format.
+- If `ApiFootball__ApiKey` is not configured, `/api/matches/*` (and the `/api/live-matches` alias) returns HTTP 503 with `ProblemDetails`.
+- Match identifiers are provider fixture ids (long).
 
 ---
 
@@ -67,9 +69,9 @@ Optional tuning:
 
 - `dotnet build http3-sports-api.sln` succeeds.
 - Without API key:
-  - `GET /api/live-matches` returns 503 with a clear message.
+  - `GET /api/matches/live` returns 503 with a clear message.
 - With API key:
-  - `GET /api/live-matches` returns 200 with a response envelope containing `matches` and `meta`.
+  - `GET /api/matches/live` returns 200 with a response envelope containing `matches` and `meta`.
 - `/health` is reachable over HTTP/2 and, when HTTPS is enabled and QUIC is supported, can be forced over HTTP/3.
 
 Protocol verification:

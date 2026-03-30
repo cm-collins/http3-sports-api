@@ -14,7 +14,7 @@ Implemented:
 - Minimal ASP.NET Core API with API-Football-backed live matches (requires configuration)
 - Port `5000` (HTTP): HTTP/1.1
 - Port `5001` (HTTPS): HTTP/1.1 + HTTP/2 + HTTP/3 (enabled only if a localhost dev cert is found and QUIC is supported)
-- Endpoints: `/`, `/health`, `/api/live-matches`, `/api/live-matches/{id}`
+- Endpoints: `/`, `/health`, `/api/matches/live`, `/api/matches/upcoming`, `/api/matches/{fixtureId}` (plus `/api/live-matches` alias)
 
 Planned (documented, not implemented yet):
 - External API integrations (API-Football, ScoreBat, TheSportsDB)
@@ -136,8 +136,10 @@ dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://l
 |---|---|---|
 | GET | `/` | Service info + advertised endpoints |
 | GET | `/health` | Health check |
-| GET | `/api/live-matches` | List live matches (API-Football; returns 503 if not configured) |
-| GET | `/api/live-matches/{id}` | Get one match by id (API-Football; returns 503 if not configured) |
+| GET | `/api/matches/live` | List live matches (API-Football; returns 503 if not configured) |
+| GET | `/api/matches/upcoming` | Upcoming fixtures (next 24h, API-Football; returns 503 if not configured) |
+| GET | `/api/matches/{fixtureId}` | Get a match by fixture id (API-Football; returns 503 if not configured) |
+| GET | `/api/live-matches` | Alias of `/api/matches/live` |
 
 ---
 
@@ -155,7 +157,7 @@ dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://l
 
 - [x] Minimal backend skeleton + real live-match data source
 - [x] Devcontainer (.NET 10, Ubuntu 24.04)
-- [ ] Replace in-memory matches with external API integration + caching
+- [x] API-Football integration + caching (live + upcoming)
 - [ ] Add SSE stream endpoints (scores/commentary)
 - [ ] Add highlights + stats endpoints
 - [ ] Add benchmark endpoints + results capture

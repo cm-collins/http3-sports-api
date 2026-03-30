@@ -23,12 +23,15 @@ API:
 
 - `GET /api/matches/live` returns a stable response envelope for live fixtures.
 - `GET /api/matches/upcoming` returns upcoming fixtures within the next 24 hours.
-- Keep `/api/live-matches*` temporarily as a compatibility alias or remove it with a documented breaking change.
+- `GET /api/matches/{fixtureId}` returns a single fixture by id (useful for match detail screens later).
+- Keep `/api/live-matches` temporarily as a compatibility alias to `/api/matches/live` or remove it with a documented breaking change.
 
 Data:
 
 - API-Football integration extended to support upcoming fixtures.
 - Caching strategy implemented per endpoint and per provider quota constraints.
+  - Live fixtures cache (seconds)
+  - Upcoming fixtures cache (seconds)
 
 Contract:
 

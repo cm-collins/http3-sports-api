@@ -1,14 +1,18 @@
 namespace LiveMatchApi.Models;
 
 public sealed record LiveMatch(
-    Guid Id,
+    long FixtureId,
+    int LeagueId,
     string League,
+    int HomeTeamId,
     string HomeTeam,
+    string? HomeTeamLogoUrl,
+    int AwayTeamId,
     string AwayTeam,
+    string? AwayTeamLogoUrl,
     int HomeScore,
     int AwayScore,
-    int Minute,
+    int? Minute,
     string Status,
-    string Venue,
+    string? Venue,
     DateTimeOffset KickoffUtc);
-

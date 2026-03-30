@@ -1,7 +1,10 @@
-using System.Net.Quic;
+using System.Threading.RateLimiting;
 using System.Security.Cryptography.X509Certificates;
-using LiveMatchApi.Contracts;
+using System.Net.Quic;
+using LiveMatchApi.Infrastructure;
+using LiveMatchApi.Endpoints;
 using LiveMatchApi.Services;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Options;
 
@@ -36,6 +39,24 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 builder.Services.AddMemoryCache();
+builder.Services.AddSingleton(new ProtocolStatus(
+    QuicSupported: quicSupported,
+    Http3Enabled: http3Enabled,
+    SupportedProtocols: supportedProtocols));
+builder.Services.AddSingleton<IApiMetaFactory, ApiMetaFactory>();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddFixedWindowLimiter("api", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 120;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+});
 
 builder.Services.AddOptions<ApiFootballOptions>()
     .BindConfiguration("ApiFootball")
@@ -56,9 +77,11 @@ builder.Services.AddHttpClient(ApiFootballLiveMatchRepository.HttpClientName, (s
     }
 });
 
-builder.Services.AddSingleton<ILiveMatchRepository, ApiFootballLiveMatchRepository>();
+builder.Services.AddSingleton<IMatchesRepository, ApiFootballLiveMatchRepository>();
 
 var app = builder.Build();
+
+app.UseRateLimiter();
 
 app.MapGet("/", () => Results.Ok(new
 {
@@ -70,8 +93,10 @@ app.MapGet("/", () => Results.Ok(new
     endpoints = new[]
     {
         "/health",
-        "/api/live-matches",
-        "/api/live-matches/{id}"
+        "/api/matches/live",
+        "/api/matches/upcoming",
+        "/api/matches/{fixtureId}",
+        "/api/live-matches (alias)"
     }
 }));
 
@@ -82,70 +107,7 @@ app.MapGet("/health", () => Results.Ok(new
     utcTime = DateTimeOffset.UtcNow
 }));
 
-var liveMatches = app.MapGroup("/api/live-matches");
-
-liveMatches.MapGet("/", async (HttpContext httpContext, ILiveMatchRepository repository, IOptions<ApiFootballOptions> options, CancellationToken cancellationToken) =>
-{
-    if (string.IsNullOrWhiteSpace(options.Value.ApiKey))
-    {
-        return CreateProviderNotConfiguredProblem();
-    }
-
-    try
-    {
-        var matches = await repository.GetAllAsync(cancellationToken);
-
-        var response = new LiveMatchListResponse(
-            Matches: matches.Select(LiveMatchDto.FromModel).ToArray(),
-            Meta: CreateMeta(protocol: httpContext.Request.Protocol, source: "api-football"));
-
-        return Results.Ok(response);
-    }
-    catch (HttpRequestException ex)
-    {
-        app.Logger.LogWarning(ex, "Upstream provider request failed while fetching live matches.");
-        return CreateUpstreamFailureProblem();
-    }
-    catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
-    {
-        app.Logger.LogWarning(ex, "Upstream provider request timed out while fetching live matches.");
-        return CreateUpstreamFailureProblem();
-    }
-});
-
-liveMatches.MapGet("/{id:guid}", async (Guid id, HttpContext httpContext, ILiveMatchRepository repository, IOptions<ApiFootballOptions> options, CancellationToken cancellationToken) =>
-{
-    if (string.IsNullOrWhiteSpace(options.Value.ApiKey))
-    {
-        return CreateProviderNotConfiguredProblem();
-    }
-
-    try
-    {
-        var match = await repository.GetByIdAsync(id, cancellationToken);
-
-        if (match is null)
-        {
-            return CreateNotFoundProblem(id);
-        }
-
-        var response = new LiveMatchResponse(
-            Match: LiveMatchDto.FromModel(match),
-            Meta: CreateMeta(protocol: httpContext.Request.Protocol, source: "api-football"));
-
-        return Results.Ok(response);
-    }
-    catch (HttpRequestException ex)
-    {
-        app.Logger.LogWarning(ex, "Upstream provider request failed while fetching live match {MatchId}.", id);
-        return CreateUpstreamFailureProblem();
-    }
-    catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
-    {
-        app.Logger.LogWarning(ex, "Upstream provider request timed out while fetching live match {MatchId}.", id);
-        return CreateUpstreamFailureProblem();
-    }
-});
+app.MapMatchesEndpoints();
 
 if (developmentCertificate is null)
 {
@@ -157,26 +119,6 @@ else if (!quicSupported)
 }
 
 app.Run();
-
-ApiMeta CreateMeta(string protocol, string source) => new(
-    Protocol: protocol,
-    UtcTime: DateTimeOffset.UtcNow,
-    Source: source);
-
-IResult CreateProviderNotConfiguredProblem() => Results.Problem(
-    statusCode: StatusCodes.Status503ServiceUnavailable,
-    title: "Live match provider not configured",
-    detail: "Set ApiFootball__ApiKey (environment variable) or ApiFootball:ApiKey (configuration) to enable real match data.");
-
-IResult CreateUpstreamFailureProblem() => Results.Problem(
-    statusCode: StatusCodes.Status502BadGateway,
-    title: "Upstream provider unavailable",
-    detail: "Failed to fetch data from the live match provider. Try again later.");
-
-IResult CreateNotFoundProblem(Guid id) => Results.Problem(
-    statusCode: StatusCodes.Status404NotFound,
-    title: "Match not found",
-    detail: $"Live match '{id}' was not found.");
 
 static X509Certificate2? TryFindLocalhostDevelopmentCertificate()
 {

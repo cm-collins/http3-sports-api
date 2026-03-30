@@ -109,7 +109,7 @@ Constraints:
 ## Phase Plan (Docs-Only)
 
 - Phase 0 (now): .NET 10 foundation + HTTP/3-enabled dev environment + API-Football live matches (configured via env var).
-- Phase 1: Add upcoming fixtures + stabilize API contracts + expand caching and resilience.
+- Phase 1: Add upcoming fixtures + stabilize API contracts + expand caching and resilience (including rate limiting).
 - Phase 2: SSE streams (scores/commentary) and highlights/stats endpoints.
 - Phase 3: Benchmark endpoints + results capture workflow.
 - Phase 4: Android app and user-facing benchmark dashboard.
