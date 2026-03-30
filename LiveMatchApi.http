@@ -1,0 +1,15 @@
+@LiveMatchApi_Host = http://localhost:5000
+
+GET {{LiveMatchApi_Host}}/
+Accept: application/json
+
+###
+
+GET {{LiveMatchApi_Host}}/health
+Accept: application/json
+
+###
+
+GET {{LiveMatchApi_Host}}/api/live-matches
+Accept: application/json
+

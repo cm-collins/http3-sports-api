@@ -1,0 +1,16 @@
+bin/
+obj/
+.vs/
+.vscode/
+TestResults/
+artifacts/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Dev containers
+.devcontainer/*.pid
+

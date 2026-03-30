@@ -1,0 +1,78 @@
+{
+    "name": "http3-sports-api",
+    "build": {
+        "dockerfile": "Dockerfile.dev",
+        "context": ".."
+    },
+    "workspaceFolder": "/workspaces/http3-sports-api",
+    "remoteUser": "vscode",
+
+    // ── Environment ──────────────────────────────────────────────────────────
+    "containerEnv": {
+        "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+        "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1",
+        "DOTNET_USE_POLLING_FILE_WATCHER": "1",
+        "MSBUILDDISABLENODEREUSE": "1",
+        // Tells Kestrel to look for the dev cert inside the container
+        "ASPNETCORE_ENVIRONMENT": "Development"
+    },
+
+    // ── VS Code extensions ───────────────────────────────────────────────────
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "editor.wordWrap": "on",
+                "editor.formatOnSave": true,
+                "[csharp]": {
+                    "editor.defaultFormatter": "ms-dotnettools.csharp"
+                }
+            },
+            "extensions": [
+                // .NET / C#
+                "ms-dotnettools.csharp",
+                "ms-dotnettools.csdevkit",
+                "ms-dotnettools.vscode-dotnet-runtime",
+                // REST / API testing — test HTTP/3 endpoints directly in VS Code
+                "humao.rest-client",
+                // Docker
+                "ms-azuretools.vscode-docker",
+                // Git & GitHub
+                "github.vscode-pull-request-github",
+                "eamodio.gitlens",
+                // General DX
+                "EditorConfig.EditorConfig",
+                "PKief.material-icon-theme",
+                "streetsidesoftware.code-spell-checker"
+            ]
+        }
+    },
+
+    // ── Port forwarding ──────────────────────────────────────────────────────
+    // NOTE: VS Code forwards TCP only. HTTP/3 (QUIC) runs over UDP on port 5001.
+    // For full HTTP/3 testing from a physical Android device or external tool,
+    // run the backend outside the container or use host network mode.
+    // Inside the container (e.g. curl --http3 localhost:5001) works fine.
+    "forwardPorts": [
+        5000,  // HTTP — HTTP/1.1 + HTTP/2 (TCP)
+        5001   // HTTPS — HTTP/1.1 + HTTP/2 + HTTP/3 (TCP forwarded; UDP tested inside container)
+    ],
+    "portsAttributes": {
+        "5000": {
+            "label": "HTTP (HTTP/1.1 + HTTP/2)",
+            "onAutoForward": "notify"
+        },
+        "5001": {
+            "label": "HTTPS + HTTP/3 (QUIC)",
+            "onAutoForward": "openBrowser"
+        }
+    },
+
+    // ── Lifecycle hooks ──────────────────────────────────────────────────────
+    // Trust the HTTPS dev cert as the devcontainer user so Kestrel can bind
+    // port 5001 with TLS (required for HTTP/3 — QUIC mandates TLS 1.3).
+    "postCreateCommand": "dotnet dev-certs https && dotnet dev-certs https --trust || true && dotnet --info",
+
+    // Restore NuGet packages once the root project exists.
+    "postStartCommand": "if [ -f LiveMatchApi.csproj ]; then dotnet restore; else echo 'Skipping dotnet restore: LiveMatchApi.csproj not found yet.'; fi"
+}
