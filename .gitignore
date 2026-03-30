@@ -5,6 +5,9 @@ obj/
 TestResults/
 artifacts/
 
+# Script runtime state (pid/log files)
+scripts/.state/
+
 # User-specific files
 *.user
 *.suo
@@ -13,4 +16,3 @@ artifacts/
 
 # Dev containers
 .devcontainer/*.pid
-

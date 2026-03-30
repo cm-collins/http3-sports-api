@@ -212,6 +212,11 @@ Run:
 dotnet test http3-sports-api.sln
 ```
 
+## Scripts
+
+There are user-style interaction scripts under `scripts/` (they start the API and call endpoints).
+See `scripts/README.md`.
+
 ## API Endpoints
 
 ### Implemented Today
