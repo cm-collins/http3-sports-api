@@ -71,7 +71,8 @@ public sealed class ScoreBatHighlightsService : IHighlightsService
         try
         {
             var client = _httpClientFactory.CreateClient(HttpClientName);
-            using var response = await client.GetAsync(requestPath, cancellationToken);
+            var url = WithToken(requestPath);
+            using var response = await client.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -96,6 +97,20 @@ public sealed class ScoreBatHighlightsService : IHighlightsService
                 Meta: _metaFactory.Create(httpContext, source: "scorebat"),
                 Warning: "Highlights provider unavailable.");
         }
+    }
+
+    private string WithToken(string requestPath)
+    {
+        var token = _options.Value.Token;
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return requestPath;
+        }
+
+        var encoded = Uri.EscapeDataString(token.Trim());
+        return requestPath.Contains('?', StringComparison.Ordinal)
+            ? $"{requestPath}&token={encoded}"
+            : $"{requestPath}?token={encoded}";
     }
 
     private IReadOnlyList<HighlightsItemDto> ParseHighlights(JsonElement root)

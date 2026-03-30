@@ -107,6 +107,12 @@ export ApiFootball__ApiKey="YOUR_KEY"
 dotnet user-secrets set "ApiFootball:ApiKey" "YOUR_KEY" --project LiveMatchApi.csproj
 ```
 
+Configure ScoreBat highlights (recommended for reliable access):
+
+```bash
+dotnet user-secrets set "ScoreBat:Token" "YOUR_TOKEN" --project LiveMatchApi.csproj
+```
+
 Server starts on:
 - `http://localhost:5000`  (HTTP/1.1)
 - `https://localhost:5001` (HTTP/1.1 + HTTP/2 + HTTP/3, when a localhost dev cert is available and QUIC is supported)

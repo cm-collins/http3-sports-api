@@ -21,6 +21,12 @@ export ApiFootball__ApiKey="YOUR_KEY"
 dotnet user-secrets set "ApiFootball:ApiKey" "YOUR_KEY" --project LiveMatchApi.csproj
 ```
 
+Configure ScoreBat (recommended; avoids 403s):
+
+```bash
+dotnet user-secrets set "ScoreBat:Token" "YOUR_TOKEN" --project LiveMatchApi.csproj
+```
+
 Run:
 
 ```bash
