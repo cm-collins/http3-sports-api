@@ -1,6 +1,7 @@
 using System.Security.Cryptography.X509Certificates;
 using LiveMatchApi.Services;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 var developmentCertificate = TryFindLocalhostDevelopmentCertificate();
@@ -25,7 +26,26 @@ builder.WebHost.ConfigureKestrel(options =>
     }
 });
 
-builder.Services.AddSingleton<ILiveMatchRepository, InMemoryLiveMatchRepository>();
+builder.Services.AddMemoryCache();
+
+builder.Services.AddOptions<ApiFootballOptions>()
+    .BindConfiguration("ApiFootball")
+    .ValidateOnStart();
+
+builder.Services.AddHttpClient(ApiFootballLiveMatchRepository.HttpClientName, (sp, client) =>
+{
+    var options = sp.GetRequiredService<IOptions<ApiFootballOptions>>().Value;
+
+    client.BaseAddress = new Uri(options.BaseUrl);
+    client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+
+    if (!string.IsNullOrWhiteSpace(options.ApiKey))
+    {
+        client.DefaultRequestHeaders.TryAddWithoutValidation("x-apisports-key", options.ApiKey);
+    }
+});
+
+builder.Services.AddSingleton<ILiveMatchRepository, ApiFootballLiveMatchRepository>();
 
 var app = builder.Build();
 
@@ -52,14 +72,31 @@ app.MapGet("/health", () => Results.Ok(new
 
 var liveMatches = app.MapGroup("/api/live-matches");
 
-liveMatches.MapGet("/", (ILiveMatchRepository repository) =>
+liveMatches.MapGet("/", async (ILiveMatchRepository repository, IOptions<ApiFootballOptions> options, CancellationToken cancellationToken) =>
 {
-    return Results.Ok(repository.GetAll());
+    if (string.IsNullOrWhiteSpace(options.Value.ApiKey))
+    {
+        return Results.Problem(
+            statusCode: StatusCodes.Status503ServiceUnavailable,
+            title: "Live match provider not configured",
+            detail: "Set ApiFootball__ApiKey (environment variable) or ApiFootball:ApiKey (configuration) to enable real match data.");
+    }
+
+    var matches = await repository.GetAllAsync(cancellationToken);
+    return Results.Ok(matches);
 });
 
-liveMatches.MapGet("/{id:guid}", (Guid id, ILiveMatchRepository repository) =>
+liveMatches.MapGet("/{id:guid}", async (Guid id, ILiveMatchRepository repository, IOptions<ApiFootballOptions> options, CancellationToken cancellationToken) =>
 {
-    var match = repository.GetById(id);
+    if (string.IsNullOrWhiteSpace(options.Value.ApiKey))
+    {
+        return Results.Problem(
+            statusCode: StatusCodes.Status503ServiceUnavailable,
+            title: "Live match provider not configured",
+            detail: "Set ApiFootball__ApiKey (environment variable) or ApiFootball:ApiKey (configuration) to enable real match data.");
+    }
+
+    var match = await repository.GetByIdAsync(id, cancellationToken);
 
     return match is null
         ? Results.NotFound(new

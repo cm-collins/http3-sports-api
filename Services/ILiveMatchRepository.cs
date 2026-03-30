@@ -4,7 +4,6 @@ namespace LiveMatchApi.Services;
 
 public interface ILiveMatchRepository
 {
-    IReadOnlyList<LiveMatch> GetAll();
-    LiveMatch? GetById(Guid id);
+    Task<IReadOnlyList<LiveMatch>> GetAllAsync(CancellationToken cancellationToken);
+    Task<LiveMatch?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 }
-
