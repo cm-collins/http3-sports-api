@@ -88,13 +88,23 @@ http3-sports-api/
 ### Prerequisites
 
 - .NET 10 SDK (this repo targets `net10.0`)
-- API-Football key (set as `ApiFootball__ApiKey`)
+- API-Football key (set as `ApiFootball__ApiKey` env var, or via .NET user-secrets)
 
 ### Run Locally
 
 ```bash
 dotnet restore
 dotnet run --project LiveMatchApi.csproj
+```
+
+Configure API-Football (choose one):
+
+```bash
+# Option 1: environment variable
+export ApiFootball__ApiKey="YOUR_KEY"
+
+# Option 2: user-secrets (recommended for local dev, avoids committing secrets)
+dotnet user-secrets set "ApiFootball:ApiKey" "YOUR_KEY" --project LiveMatchApi.csproj
 ```
 
 Server starts on:

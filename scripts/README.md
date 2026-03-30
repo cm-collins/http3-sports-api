@@ -10,8 +10,16 @@ Defaults:
 
 Provider notes:
 
-- Match endpoints require API-Football to be configured (`ApiFootball__ApiKey`), otherwise they return 503.
+- Match endpoints require API-Football to be configured (`ApiFootball__ApiKey` or user-secrets), otherwise they return 503.
 - Highlights are backed by ScoreBat and may return a degraded response if upstream blocks or fails.
+
+Configure API-Football (choose one):
+
+```bash
+export ApiFootball__ApiKey="YOUR_KEY"
+# or:
+dotnet user-secrets set "ApiFootball:ApiKey" "YOUR_KEY" --project LiveMatchApi.csproj
+```
 
 Run:
 
@@ -23,4 +31,3 @@ scripts/highlights.sh arsenal
 scripts/benchmarks.sh
 scripts/protocol-probe.sh
 ```
-
