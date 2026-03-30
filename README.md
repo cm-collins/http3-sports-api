@@ -4,7 +4,7 @@
 
 **Backend:** .NET 10 (ASP.NET Core + Kestrel)  
 **Mobile:** Kotlin Android *(planned; not in this repo yet)*  
-**Protocols:** HTTP/1.1 + HTTP/2 (TCP) and HTTP/3 (QUIC over UDP, TLS 1.3)
+**Protocols:** HTTP/1.1 (TCP) and HTTP/2 + HTTP/3 (HTTPS, QUIC over UDP for HTTP/3)
 
 ---
 
@@ -12,8 +12,8 @@
 
 Implemented:
 - Minimal ASP.NET Core API with API-Football-backed live matches (requires configuration)
-- Port `5000` (HTTP): HTTP/1.1 + HTTP/2
-- Port `5001` (HTTPS): HTTP/1.1 + HTTP/2 + HTTP/3 (enabled only if a localhost dev cert is found)
+- Port `5000` (HTTP): HTTP/1.1
+- Port `5001` (HTTPS): HTTP/1.1 + HTTP/2 + HTTP/3 (enabled only if a localhost dev cert is found and QUIC is supported)
 - Endpoints: `/`, `/health`, `/api/live-matches`, `/api/live-matches/{id}`
 
 Planned (documented, not implemented yet):
@@ -90,8 +90,8 @@ dotnet run --project LiveMatchApi.csproj
 ```
 
 Server starts on:
-- `http://localhost:5000`  (HTTP/1.1 + HTTP/2)
-- `https://localhost:5001` (HTTP/1.1 + HTTP/2 + HTTP/3, when a localhost dev cert is available)
+- `http://localhost:5000`  (HTTP/1.1)
+- `https://localhost:5001` (HTTP/1.1 + HTTP/2 + HTTP/3, when a localhost dev cert is available and QUIC is supported)
 
 ### Enable HTTPS + HTTP/3 in Development
 
@@ -106,12 +106,24 @@ dotnet dev-certs https --trust || true
 
 If no dev cert is found, the app still runs on port `5000` and logs a warning.
 
+If QUIC is not supported in your environment, the HTTPS listener still works, but HTTP/3 is disabled and only HTTP/1.1 + HTTP/2 will be available on port `5001`.
+
 ### Verify HTTP/3 (Development)
 
-This project does not yet emit `Alt-Svc` headers (that’s planned). To force HTTP/3 during testing, use curl:
+This project does not yet emit `Alt-Svc` headers (that’s planned). To force protocol during testing:
+
+HTTP/3 requires QUIC support in the runtime environment. If QUIC is not supported, HTTP/3 will be disabled even if HTTPS is enabled.
+
+If your `curl` build supports HTTP/3:
+```bash
+curl -v --http3 -k https://localhost:5001/health
+```
+
+If your `curl` does not support HTTP/3, use the included probe tool:
 
 ```bash
-curl -v --http3 https://localhost:5001/health
+dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://localhost:5001/health --h2 --insecure
+dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://localhost:5001/health --h3 --insecure
 ```
 
 ---

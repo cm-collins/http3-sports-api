@@ -37,8 +37,8 @@ Common pitfalls:
 
 ### Local (Devcontainer)
 
-- Ports: `5000/tcp` (HTTP/1.1 + HTTP/2), `5001/tcp+udp` (HTTPS + HTTP/3).
-- Note: VS Code forwards TCP only. HTTP/3 (UDP) can be tested inside the container (for example, `curl --http3 https://localhost:5001/health`).
+- Ports: `5000/tcp` (HTTP/1.1), `5001/tcp+udp` (HTTPS with HTTP/2 and HTTP/3).
+- Note: VS Code forwards TCP only. HTTP/3 (UDP) can be tested inside the container. If your `curl` does not support HTTP/3, use `tools/ProtocolProbe`.
 
 ### Staging (Public)
 

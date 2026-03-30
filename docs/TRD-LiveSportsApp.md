@@ -107,8 +107,8 @@ Environment (devcontainer):
 
 Backend behavior today:
 
-- Listens on `http://0.0.0.0:5000` (HTTP/1.1 + HTTP/2).
-- Listens on `https://0.0.0.0:5001` (HTTP/1.1 + HTTP/2 + HTTP/3) only if a valid localhost dev certificate is found.
+- Listens on `http://0.0.0.0:5000` (HTTP/1.1).
+- Listens on `https://0.0.0.0:5001` (HTTP/1.1 + HTTP/2 + HTTP/3) only if a valid localhost dev certificate is found and QUIC is supported in the runtime environment.
 - Uses API-Football for real live-match data when configured. If the API key is missing, the live match endpoints return 503.
 
 Implemented endpoints today:
@@ -304,7 +304,7 @@ sequenceDiagram
 ```mermaid
 flowchart TD
     K[Kestrel Server Starts]
-    K --> P1[Port 5000\nHTTP/1.1 + HTTP/2\nTCP]
+    K --> P1[Port 5000\nHTTP/1.1\nTCP]
     K --> P2[Port 5001\nHTTP/1.1 + HTTP/2 + HTTP/3\nTCP + UDP]
     P2 --> TLS[TLS 1.3 Certificate\nRequired for QUIC]
     TLS --> ALT[Alt-Svc Header\n(planned for discovery)]

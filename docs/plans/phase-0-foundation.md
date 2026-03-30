@@ -21,8 +21,8 @@ Backend:
 
 - .NET 10 minimal API in `Program.cs`
 - Kestrel listeners:
-  - `5000/tcp`: HTTP/1.1 and HTTP/2
-  - `5001/tcp+udp`: HTTPS with HTTP/1.1, HTTP/2, HTTP/3 when a localhost dev cert is available
+  - `5000/tcp`: HTTP/1.1
+  - `5001/tcp+udp`: HTTPS with HTTP/1.1, HTTP/2, HTTP/3 when a localhost dev cert is available and QUIC is supported
 
 Data:
 
@@ -30,6 +30,10 @@ Data:
   - options in `Services/ApiFootballOptions.cs`
   - repository in `Services/ApiFootballLiveMatchRepository.cs`
   - `IMemoryCache` caching for live fixtures
+
+Contracts:
+
+- Response DTOs in `Contracts/` (API returns stable envelopes, not raw domain models)
 
 Endpoints:
 
@@ -55,6 +59,7 @@ Optional tuning:
 
 - `ApiFootball__BaseUrl` (defaults to `https://v3.football.api-sports.io/`)
 - `ApiFootball__LiveCacheSeconds` (defaults to `10`)
+- `ApiFootball__TimeoutSeconds` (defaults to `10`)
 
 ---
 
@@ -64,8 +69,13 @@ Optional tuning:
 - Without API key:
   - `GET /api/live-matches` returns 503 with a clear message.
 - With API key:
-  - `GET /api/live-matches` returns 200 and a non-empty array when fixtures are live upstream.
-- `/health` is reachable over HTTP/2 and, when HTTPS is enabled, can be forced over HTTP/3.
+  - `GET /api/live-matches` returns 200 with a response envelope containing `matches` and `meta`.
+- `/health` is reachable over HTTP/2 and, when HTTPS is enabled and QUIC is supported, can be forced over HTTP/3.
+
+Protocol verification:
+
+- If your `curl` supports HTTP/3, you can force it directly.
+- Otherwise use `tools/ProtocolProbe` to request HTTP/2 and HTTP/3 explicitly.
 
 ---
 
@@ -75,7 +85,7 @@ Before adding features, follow:
 
 - `docs/plans/engineering-guidelines.md`
 
-Immediate follow-ups to keep Phase 0 maintainable:
+Phase 0 clean-code baseline includes:
 
-- Introduce response DTOs (do not expose `Models/LiveMatch` as the long-term public contract).
-- Add structured error handling and a consistent `ProblemDetails` strategy across all endpoints.
+- Response DTOs (no long-term exposure of provider shapes, and no direct exposure of `Models/LiveMatch` as the public contract).
+- Consistent `ProblemDetails` responses for missing provider configuration, upstream failures, and not-found.

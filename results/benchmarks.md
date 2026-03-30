@@ -22,8 +22,17 @@
 2. Use the same endpoint for both protocols:
    - Basic ping substitute: `GET /health`
 3. Force protocol from the client:
-   - HTTP/2: `curl -sS -o /dev/null -w "%{time_total}\n" --http2-prior-knowledge http://localhost:5000/health`
-   - HTTP/3 (requires HTTPS listener enabled): `curl -sS -o /dev/null -w "%{time_total}\n" --http3 https://localhost:5001/health`
+   - HTTP/2: `curl -sS -k -o /dev/null -w "%{time_total}\n" --http2 https://localhost:5001/health`
+   - HTTP/3: use a curl build with HTTP/3 support, or use `tools/ProtocolProbe` (see below)
+
+If your `curl` supports HTTP/3:
+
+- HTTP/3: `curl -sS -k -o /dev/null -w "%{time_total}\n" --http3 https://localhost:5001/health`
+
+If your `curl` does not support HTTP/3, use the included probe tool:
+
+- HTTP/2: `dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://localhost:5001/health --h2 --insecure`
+- HTTP/3: `dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://localhost:5001/health --h3 --insecure`
 
 Notes:
 - HTTP/3 requires TLS and UDP reachability. In a devcontainer, UDP is testable inside the container; VS Code port forwarding is TCP-only.

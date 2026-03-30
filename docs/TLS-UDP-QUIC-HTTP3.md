@@ -165,6 +165,6 @@ flowchart TB
 
 ## 6. How This Relates to This Repo (Today)
 
-- The app exposes `http://...:5000` (HTTP/1.1 + HTTP/2).
-- It can expose `https://...:5001` (HTTP/1.1 + HTTP/2 + HTTP/3) when a localhost dev cert exists.
+- The app exposes `http://...:5000` (HTTP/1.1).
+- It can expose `https://...:5001` (HTTP/1.1 + HTTP/2 + HTTP/3) when a localhost dev cert exists and QUIC is supported.
 - The app does not yet emit `Alt-Svc` headers; HTTP/3 testing is done by forcing protocol on the client.
