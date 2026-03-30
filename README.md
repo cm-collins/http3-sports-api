@@ -169,7 +169,8 @@ dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://l
 - [x] API-Football integration + caching (live + upcoming)
 - [x] Add SSE stream endpoints (score + key events)
 - [x] Add highlights + stats endpoints
-- [ ] Add benchmark endpoints + results capture
+- [x] Add benchmark endpoints (ping/payload/panels/stream)
+- [ ] Capture benchmark results (see `results/benchmarks.md`)
 - [ ] Deploy staging + production (see `docs/GO-LIVE.md`)
 - [ ] Kotlin Android app (separate repo/folder)
 

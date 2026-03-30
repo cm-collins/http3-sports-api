@@ -334,6 +334,10 @@ flowchart TD
 | GET | `/api/match/{fixtureId}/stats` | HTTP/2 or HTTP/3 | Match statistics (requires API-Football configured; degrades gracefully) |
 | GET | `/api/highlights/feed` | HTTP/2 or HTTP/3 | Recent highlights (ScoreBat; degrades gracefully) |
 | GET | `/api/highlights/{team}` | HTTP/2 or HTTP/3 | Team highlights (ScoreBat; degrades gracefully) |
+| GET | `/api/benchmark/ping` | HTTP/2 or HTTP/3 | Benchmark ping endpoint (no upstream dependencies) |
+| GET | `/api/benchmark/payload/{kb}` | HTTP/2 or HTTP/3 | Benchmark payload endpoint (capped; no upstream dependencies) |
+| GET | `/api/benchmark/panel/{name}?delayMs=..` | HTTP/2 or HTTP/3 | Optional panel-style benchmark endpoint (simulate slow panel) |
+| GET | `/api/benchmark/stream?intervalMs=..` | HTTP/2 or HTTP/3 | Benchmark SSE stream (no upstream dependencies) |
 | GET | `/api/live-matches` | HTTP/2 or HTTP/3 | Alias of `/api/matches/live` |
 
 #### 5.2.2 Target (Planned) Endpoints

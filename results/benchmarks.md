@@ -2,7 +2,7 @@
 
 > Results will be recorded here as testing progresses.
 >
-> Status: the backend does not yet implement dedicated `/api/benchmark/*` endpoints. Until then, use `/health` and other stable endpoints for basic latency/protocol checks.
+> Status: `/api/benchmark/*` endpoints are implemented. Use them consistently for protocol comparisons.
 
 ## Test Environment
 
@@ -19,24 +19,26 @@
 
 1. Start the API from repo root:
    - `dotnet run --project LiveMatchApi.csproj`
-2. Use the same endpoint for both protocols:
-   - Basic ping substitute: `GET /health`
+2. Use the benchmark endpoints:
+   - Ping: `GET /api/benchmark/ping`
+   - Payload: `GET /api/benchmark/payload/{kb}`
+   - SSE stream: `GET /api/benchmark/stream`
 3. Force protocol from the client:
-   - HTTP/2: `curl -sS -k -o /dev/null -w "%{time_total}\n" --http2 https://localhost:5001/health`
+   - HTTP/2: `curl -sS -k -o /dev/null -w "%{time_total}\n" --http2 https://localhost:5001/api/benchmark/ping`
    - HTTP/3: use a curl build with HTTP/3 support, or use `tools/ProtocolProbe` (see below)
 
 If your `curl` supports HTTP/3:
 
-- HTTP/3: `curl -sS -k -o /dev/null -w "%{time_total}\n" --http3 https://localhost:5001/health`
+- HTTP/3: `curl -sS -k -o /dev/null -w "%{time_total}\n" --http3 https://localhost:5001/api/benchmark/ping`
 
 If your `curl` does not support HTTP/3, use the included probe tool:
 
-- HTTP/2: `dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://localhost:5001/health --h2 --insecure`
-- HTTP/3: `dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://localhost:5001/health --h3 --insecure`
+- HTTP/2: `dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://localhost:5001/api/benchmark/ping --h2 --insecure`
+- HTTP/3: `dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://localhost:5001/api/benchmark/ping --h3 --insecure`
 
 Notes:
 - HTTP/3 requires TLS and UDP reachability. In a devcontainer, UDP is testable inside the container; VS Code port forwarding is TCP-only.
-- Once `/api/benchmark/*` endpoints exist, update this file to use those endpoints consistently.
+- For payload tests: `GET /api/benchmark/payload/100`, `.../500`, `.../1024`.
 
 ---
 

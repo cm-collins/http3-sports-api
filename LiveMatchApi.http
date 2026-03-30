@@ -33,3 +33,17 @@ Accept: application/json
 
 GET {{LiveMatchApi_Host}}/api/highlights/arsenal
 Accept: application/json
+
+###
+
+GET {{LiveMatchApi_Host}}/api/benchmark/ping
+Accept: application/json
+
+###
+
+GET {{LiveMatchApi_Host}}/api/benchmark/payload/100
+
+###
+
+GET {{LiveMatchApi_Host}}/api/benchmark/panel/slow?delayMs=1500
+Accept: application/json

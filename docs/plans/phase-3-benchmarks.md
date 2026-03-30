@@ -1,7 +1,7 @@
 # Phase 3: Benchmarks and Results Capture
 
 **Last Updated:** 2026-03-30  
-**Status:** Planned
+**Status:** Implemented (MVP)
 
 This phase makes protocol differences measurable and repeatable.
 
@@ -25,7 +25,10 @@ Endpoints:
 
 - `GET /api/benchmark/ping`
 - `GET /api/benchmark/payload/{kb}`
-- Optional: endpoints designed to be called concurrently by the client to simulate panels.
+- Optional: endpoints designed to be called concurrently by the client to simulate panels:
+  - `GET /api/benchmark/panel/{name}?delayMs=...`
+- Long-lived stream benchmark:
+  - `GET /api/benchmark/stream?intervalMs=...`
 
 Metadata:
 
@@ -57,4 +60,3 @@ Results:
   - good Wi-Fi
   - lossy mobile
   - network switches when possible
-

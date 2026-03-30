@@ -56,6 +56,14 @@ builder.Services.AddRateLimiter(options =>
         limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         limiterOptions.QueueLimit = 0;
     });
+
+    options.AddFixedWindowLimiter("benchmark", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 60;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
 });
 
 builder.Services.AddOptions<ApiFootballOptions>()
@@ -119,6 +127,10 @@ app.MapGet("/", () => Results.Ok(new
         "/api/match/{fixtureId}/stats",
         "/api/highlights/feed",
         "/api/highlights/{team}",
+        "/api/benchmark/ping",
+        "/api/benchmark/payload/{kb}",
+        "/api/benchmark/panel/{name}?delayMs=..",
+        "/api/benchmark/stream?intervalMs=..",
         "/api/live-matches (alias)"
     }
 }));
@@ -133,6 +145,7 @@ app.MapGet("/health", () => Results.Ok(new
 app.MapMatchesEndpoints();
 app.MapMatchEndpoints();
 app.MapHighlightsEndpoints();
+app.MapBenchmarkEndpoints();
 
 if (developmentCertificate is null)
 {
