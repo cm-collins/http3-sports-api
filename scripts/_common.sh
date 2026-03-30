@@ -5,6 +5,9 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 STATE_DIR="${ROOT_DIR}/scripts/.state"
 mkdir -p "${STATE_DIR}"
 
+# Default to Development so `appsettings.Development.json` is used when scripts start the API.
+export ASPNETCORE_ENVIRONMENT="${ASPNETCORE_ENVIRONMENT:-Development}"
+
 BASE_HTTP_DEFAULT="http://localhost:5000"
 BASE_HTTPS_DEFAULT="https://localhost:5001"
 
@@ -46,6 +49,72 @@ json_pretty() {
     jq .
   else
     cat
+  fi
+}
+
+try_read_config_string() {
+  local file="$1"
+  local section="$2"
+  local key="$3"
+
+  [[ -f "${file}" ]] || return 1
+
+  # Returns 0 if the key exists in the section (even if the value is empty).
+  # Assumes config is the simple shape used in this repo:
+  # "Section": { "Key": "Value", ... }
+  awk -v section="${section}" -v key="${key}" '
+    BEGIN { in_section=0; found=0 }
+    $0 ~ "\""section"\"" && $0 ~ "{" { in_section=1; next }
+    in_section && $0 ~ "\""key"\"" {
+      line=$0
+      sub(/.*:/, "", line)
+      gsub(/^[[:space:]]*/, "", line)
+      gsub(/[[:space:]]*,?[[:space:]]*$/, "", line)
+      sub(/^"/, "", line)
+      sub(/"$/, "", line)
+      print line
+      found=1
+      exit
+    }
+    in_section && $0 ~ /^[[:space:]]*}[[:space:]]*,?[[:space:]]*$/ { in_section=0 }
+    END { exit(found ? 0 : 1) }
+  ' "${file}"
+}
+
+config_string() {
+  # Reads from appsettings.{ENV}.json first (if present), then appsettings.json.
+  # Mirrors .NET behavior where env-specific overrides base.
+  local section="$1"
+  local key="$2"
+  local env="${ASPNETCORE_ENVIRONMENT:-Development}"
+
+  local env_file="${ROOT_DIR}/appsettings.${env}.json"
+  local base_file="${ROOT_DIR}/appsettings.json"
+
+  if try_read_config_string "${env_file}" "${section}" "${key}"; then
+    return 0
+  fi
+
+  try_read_config_string "${base_file}" "${section}" "${key}"
+}
+
+warn_if_missing_creds() {
+  local api_key
+  api_key="$(config_string "ApiFootball" "ApiKey" || true)"
+  if [[ -z "${api_key}" ]]; then
+    print_section "Config: ApiFootball:ApiKey is empty in appsettings (match endpoints will return 503)"
+    echo "Set ApiFootball:ApiKey in appsettings.${ASPNETCORE_ENVIRONMENT}.json (local only), or use user-secrets:"
+    echo "  dotnet user-secrets set \"ApiFootball:ApiKey\" \"YOUR_KEY\" --project LiveMatchApi.csproj"
+    echo "Note: scripts only read appsettings*.json for this warning; they cannot see user-secrets."
+  fi
+
+  local sb_token
+  sb_token="$(config_string "ScoreBat" "Token" || true)"
+  if [[ -z "${sb_token}" ]]; then
+    print_section "Config: ScoreBat:Token is empty in appsettings (highlights may degrade/403 depending on upstream)"
+    echo "Set ScoreBat:Token in appsettings.${ASPNETCORE_ENVIRONMENT}.json (local only), or use user-secrets:"
+    echo "  dotnet user-secrets set \"ScoreBat:Token\" \"YOUR_TOKEN\" --project LiveMatchApi.csproj"
+    echo "Note: scripts only read appsettings*.json for this warning; they cannot see user-secrets."
   fi
 }
 

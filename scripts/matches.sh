@@ -7,6 +7,7 @@ source "${SCRIPT_DIR}/_common.sh"
 
 trap 'stop_api_if_started_by_script' EXIT
 start_api_if_needed
+warn_if_missing_creds
 
 curl_json "/"
 curl_json "/health"
@@ -32,4 +33,3 @@ fi
 
 print_section "Matches: upcoming"
 curl_json "/api/matches/upcoming"
-

@@ -8,22 +8,16 @@ Defaults:
 - Starts the API in the background if it is not already running
 - Stops the API when the script exits
 
-Provider notes:
+Credentials:
 
-- Match endpoints require API-Football to be configured (`ApiFootball__ApiKey` or user-secrets), otherwise they return 503.
-- Highlights are backed by ScoreBat and may return a degraded response if upstream blocks or fails.
+- Scripts start the API with `ASPNETCORE_ENVIRONMENT=Development` by default, so `appsettings.Development.json` is used.
+- If `ApiFootball:ApiKey` is empty, match endpoints will return 503 (scripts will warn).
+- If `ScoreBat:Token` is empty, highlights may degrade/403 depending on upstream (scripts will warn).
 
-Configure API-Football (choose one):
+Recommended (don’t commit secrets): set keys via user-secrets:
 
 ```bash
-export ApiFootball__ApiKey="YOUR_KEY"
-# or:
 dotnet user-secrets set "ApiFootball:ApiKey" "YOUR_KEY" --project LiveMatchApi.csproj
-```
-
-Configure ScoreBat (recommended; avoids 403s):
-
-```bash
 dotnet user-secrets set "ScoreBat:Token" "YOUR_TOKEN" --project LiveMatchApi.csproj
 ```
 

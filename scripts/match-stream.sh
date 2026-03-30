@@ -7,6 +7,7 @@ source "${SCRIPT_DIR}/_common.sh"
 
 trap 'stop_api_if_started_by_script' EXIT
 start_api_if_needed
+warn_if_missing_creds
 
 fixture_id="${1:-${FIXTURE_ID:-}}"
 if [[ -z "${fixture_id}" ]]; then
@@ -36,4 +37,3 @@ case "${mode}" in
 esac
 
 curl_sse "${path}" "${seconds}"
-
