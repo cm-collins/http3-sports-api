@@ -62,6 +62,10 @@ builder.Services.AddOptions<ApiFootballOptions>()
     .BindConfiguration("ApiFootball")
     .ValidateOnStart();
 
+builder.Services.AddOptions<ScoreBatOptions>()
+    .BindConfiguration("ScoreBat")
+    .ValidateOnStart();
+
 builder.Services.AddHttpClient(ApiFootballLiveMatchRepository.HttpClientName, (sp, client) =>
 {
     var options = sp.GetRequiredService<IOptions<ApiFootballOptions>>().Value;
@@ -77,7 +81,20 @@ builder.Services.AddHttpClient(ApiFootballLiveMatchRepository.HttpClientName, (s
     }
 });
 
+builder.Services.AddHttpClient(ScoreBatHighlightsService.HttpClientName, (sp, client) =>
+{
+    var options = sp.GetRequiredService<IOptions<ScoreBatOptions>>().Value;
+
+    var baseUrl = options.BaseUrl.EndsWith('/') ? options.BaseUrl : $"{options.BaseUrl}/";
+    client.BaseAddress = new Uri(baseUrl);
+    client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+    client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 60));
+});
+
 builder.Services.AddSingleton<IMatchesRepository, ApiFootballLiveMatchRepository>();
+builder.Services.AddSingleton<IMatchStatsService, ApiFootballMatchStatsService>();
+builder.Services.AddSingleton<IMatchStreamService, ApiFootballMatchStreamService>();
+builder.Services.AddSingleton<IHighlightsService, ScoreBatHighlightsService>();
 
 var app = builder.Build();
 
@@ -96,6 +113,12 @@ app.MapGet("/", () => Results.Ok(new
         "/api/matches/live",
         "/api/matches/upcoming",
         "/api/matches/{fixtureId}",
+        "/api/match/{fixtureId}/stream",
+        "/api/match/{fixtureId}/score-stream",
+        "/api/match/{fixtureId}/commentary-stream",
+        "/api/match/{fixtureId}/stats",
+        "/api/highlights/feed",
+        "/api/highlights/{team}",
         "/api/live-matches (alias)"
     }
 }));
@@ -108,6 +131,8 @@ app.MapGet("/health", () => Results.Ok(new
 }));
 
 app.MapMatchesEndpoints();
+app.MapMatchEndpoints();
+app.MapHighlightsEndpoints();
 
 if (developmentCertificate is null)
 {

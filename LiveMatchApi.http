@@ -17,3 +17,19 @@ Accept: application/json
 
 GET {{LiveMatchApi_Host}}/api/matches/upcoming
 Accept: application/json
+
+###
+
+# Replace {fixtureId} with a real fixture id from /api/matches/live or /api/matches/upcoming
+GET {{LiveMatchApi_Host}}/api/match/{fixtureId}/stats
+Accept: application/json
+
+###
+
+GET {{LiveMatchApi_Host}}/api/highlights/feed
+Accept: application/json
+
+###
+
+GET {{LiveMatchApi_Host}}/api/highlights/arsenal
+Accept: application/json

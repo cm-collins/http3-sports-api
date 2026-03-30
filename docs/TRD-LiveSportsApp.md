@@ -118,6 +118,12 @@ Implemented endpoints today:
 - `GET /api/matches/live`
 - `GET /api/matches/upcoming`
 - `GET /api/matches/{fixtureId}`
+- `GET /api/match/{fixtureId}/stream` (SSE)
+- `GET /api/match/{fixtureId}/score-stream` (SSE)
+- `GET /api/match/{fixtureId}/commentary-stream` (SSE)
+- `GET /api/match/{fixtureId}/stats`
+- `GET /api/highlights/feed`
+- `GET /api/highlights/{team}`
 - `GET /api/live-matches` (alias)
 
 ---
@@ -322,6 +328,12 @@ flowchart TD
 | GET | `/api/matches/live` | HTTP/2 or HTTP/3 | List live matches (API-Football; returns 503 if not configured) |
 | GET | `/api/matches/upcoming` | HTTP/2 or HTTP/3 | Upcoming fixtures (next 24h, API-Football; returns 503 if not configured) |
 | GET | `/api/matches/{fixtureId}` | HTTP/2 or HTTP/3 | Get a match by fixture id (API-Football; returns 503 if not configured) |
+| GET | `/api/match/{fixtureId}/stream` | HTTP/2 or HTTP/3 | SSE: score updates + key events (requires API-Football configured) |
+| GET | `/api/match/{fixtureId}/score-stream` | HTTP/2 or HTTP/3 | SSE: score-only stream (requires API-Football configured) |
+| GET | `/api/match/{fixtureId}/commentary-stream` | HTTP/2 or HTTP/3 | SSE: key events stream (requires API-Football configured) |
+| GET | `/api/match/{fixtureId}/stats` | HTTP/2 or HTTP/3 | Match statistics (requires API-Football configured; degrades gracefully) |
+| GET | `/api/highlights/feed` | HTTP/2 or HTTP/3 | Recent highlights (ScoreBat; degrades gracefully) |
+| GET | `/api/highlights/{team}` | HTTP/2 or HTTP/3 | Team highlights (ScoreBat; degrades gracefully) |
 | GET | `/api/live-matches` | HTTP/2 or HTTP/3 | Alias of `/api/matches/live` |
 
 #### 5.2.2 Target (Planned) Endpoints

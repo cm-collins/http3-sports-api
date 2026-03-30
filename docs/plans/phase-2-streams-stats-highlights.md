@@ -1,7 +1,7 @@
 # Phase 2: Streams, Stats, Highlights
 
 **Last Updated:** 2026-03-30  
-**Status:** Planned
+**Status:** Implemented (MVP)
 
 This phase adds the features that make HTTP/3 benefits visible: server push, multi-panel concurrency, and resilience under loss.
 
@@ -60,4 +60,3 @@ Highlights:
   concurrently without visible blocking.
 - Under packet loss simulation, other panels continue to update while one is delayed.
 - SSE endpoints do not leak memory or hold resources after disconnect.
-

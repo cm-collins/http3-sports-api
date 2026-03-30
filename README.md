@@ -15,11 +15,14 @@ Implemented:
 - Port `5000` (HTTP): HTTP/1.1
 - Port `5001` (HTTPS): HTTP/1.1 + HTTP/2 + HTTP/3 (enabled only if a localhost dev cert is found and QUIC is supported)
 - Endpoints: `/`, `/health`, `/api/matches/live`, `/api/matches/upcoming`, `/api/matches/{fixtureId}` (plus `/api/live-matches` alias)
+- Phase 2 endpoints:
+  - `/api/match/{fixtureId}/stream` (SSE score updates + goals + match end)
+  - `/api/match/{fixtureId}/score-stream` and `/api/match/{fixtureId}/commentary-stream` (optional split streams)
+  - `/api/match/{fixtureId}/stats` (API-Football stats; degrades gracefully on upstream errors)
+  - `/api/highlights/feed` and `/api/highlights/{team}` (ScoreBat highlights; degrades gracefully)
 
 Planned (documented, not implemented yet):
-- External API integrations (API-Football, ScoreBat, TheSportsDB)
-- SSE match stream endpoints
-- Highlights + stats endpoints
+- External API integrations (TheSportsDB team meta)
 - Benchmark endpoints + dashboard
 - Android client app
 
@@ -139,6 +142,12 @@ dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://l
 | GET | `/api/matches/live` | List live matches (API-Football; returns 503 if not configured) |
 | GET | `/api/matches/upcoming` | Upcoming fixtures (next 24h, API-Football; returns 503 if not configured) |
 | GET | `/api/matches/{fixtureId}` | Get a match by fixture id (API-Football; returns 503 if not configured) |
+| GET | `/api/match/{fixtureId}/stream` | SSE stream: score updates + key events (requires API-Football configured) |
+| GET | `/api/match/{fixtureId}/score-stream` | SSE stream: score-only (requires API-Football configured) |
+| GET | `/api/match/{fixtureId}/commentary-stream` | SSE stream: key events (requires API-Football configured) |
+| GET | `/api/match/{fixtureId}/stats` | Match stats (requires API-Football configured; returns degraded response on upstream issues) |
+| GET | `/api/highlights/feed` | Recent highlights (ScoreBat; returns degraded response on upstream issues) |
+| GET | `/api/highlights/{team}` | Team highlights (ScoreBat; returns degraded response on upstream issues) |
 | GET | `/api/live-matches` | Alias of `/api/matches/live` |
 
 ---
@@ -158,8 +167,8 @@ dotnet run --project tools/ProtocolProbe/ProtocolProbe.csproj -- --url https://l
 - [x] Minimal backend skeleton + real live-match data source
 - [x] Devcontainer (.NET 10, Ubuntu 24.04)
 - [x] API-Football integration + caching (live + upcoming)
-- [ ] Add SSE stream endpoints (scores/commentary)
-- [ ] Add highlights + stats endpoints
+- [x] Add SSE stream endpoints (score + key events)
+- [x] Add highlights + stats endpoints
 - [ ] Add benchmark endpoints + results capture
 - [ ] Deploy staging + production (see `docs/GO-LIVE.md`)
 - [ ] Kotlin Android app (separate repo/folder)
